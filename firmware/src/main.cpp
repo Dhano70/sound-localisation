@@ -1,18 +1,15 @@
 #include <Arduino.h>
 
-// put function declarations here:
-int myFunction(int, int);
 
 void setup() {
   // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  Serial.begin(115200);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-}
-
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+  Serial.printf("flash: %u MB, PSRAM: %u MB\n",
+                ESP.getFlashChipSize() / (1024 * 1024),
+                ESP.getPsramSize() / (1024 * 1024));
+  delay(1000);
 }
