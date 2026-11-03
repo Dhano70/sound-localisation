@@ -39,6 +39,7 @@ void setup() {
 
   i2s_set_pin(I2S_NUM_0, &pin_config);
 
+  // Allocate audio buffer in PSRAM
   audio_buffer = (int32_t *)heap_caps_malloc(NUM_SAMPLES * sizeof(int32_t), MALLOC_CAP_SPIRAM);
   if (audio_buffer == NULL) {
     Serial.println("Failed to allocate audio buffer in PSRAM");
@@ -59,7 +60,11 @@ void loop() {
 
   size_t bytes_read = 0;
   i2s_read(I2S_NUM_0, audio_buffer, NUM_SAMPLES * sizeof(int32_t), &bytes_read, portMAX_DELAY);
-  Serial.println("Samples read: " + String(bytes_read / sizeof(int32_t)));
+  size_t samples_read = bytes_read / sizeof(int32_t);
+
+  for (size_t i = 0; i < samples_read; i++) {
+    Serial.println(audio_buffer[i] >> 8); // mic sends 24 bits at the top of a 32-bit slot, so shift
+  }
 
   Serial.println("END");
 }
