@@ -23,12 +23,16 @@ with serial.Serial(PORT, BAUD_RATE, timeout=5, exclusive=True) as ser:
         print("no START received")
         sys.exit(1)
 
+    print("recording...")
+
     samples = []
 
     while True:
         line = ser.readline().rstrip()
         if line == b"END" or line == b"":
             break
+        if len(samples) == 0:
+            print("recording finished, receiving...")
         samples.append(int(line))
 
     print(len(samples))
