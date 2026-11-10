@@ -10,12 +10,20 @@
 #define PIN_BCLK 4
 #define PIN_LRC 5
 #define PIN_DIN 6
+#define AMP_CHANNELS 2
 
 #define SAMPLE_RATE 16000
-#define AUDIO_SECONDS 2
-#define NUM_SAMPLES (SAMPLE_RATE * AUDIO_SECONDS)
+#define AUDIO_DURATION_MS 2000
+#define NUM_SAMPLES (SAMPLE_RATE * AUDIO_DURATION_MS / 1000)
+
+// Tone constants
+#define TONE_FREQUENCY 1000
+#define TONE_DURATION_MS 200
+#define TONE_AMPLITUDE 3000
+#define TONE_FRAMES (SAMPLE_RATE * TONE_DURATION_MS / 1000)
 
 int32_t *audio_buffer;
+int16_t tone_buffer[TONE_FRAMES * AMP_CHANNELS];
 
 void setup() {
   Serial.begin(921600);
@@ -69,6 +77,13 @@ void setup() {
   if (audio_buffer == NULL) {
     Serial.println("Failed to allocate audio buffer in PSRAM");
   }
+
+  // Generate a 1kHz tone for 200ms
+  for (size_t i = 0; i < TONE_FRAMES; i++) {
+    int16_t sample = (int16_t)(TONE_AMPLITUDE * sin(2*PI * TONE_FREQUENCY * i / SAMPLE_RATE));
+    tone_buffer[i * 2] = sample; // Left channel
+    tone_buffer[i * 2 + 1] = sample; // Right channel
+  }
 }
 
 void loop() {
@@ -94,6 +109,8 @@ void loop() {
   }
 
   else if (command == 'b'){
-    //make a sound
+    size_t bytes_written = 0;
+    i2s_write(I2S_NUM_1, tone_buffer, sizeof(tone_buffer), &bytes_written, portMAX_DELAY);
+    Serial.println("PLAYING TONE");
   }
 }
