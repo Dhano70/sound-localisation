@@ -81,8 +81,9 @@ void setup() {
   // Generate a 1kHz tone for 200ms
   for (size_t i = 0; i < TONE_FRAMES; i++) {
     int16_t sample = (int16_t)(TONE_AMPLITUDE * sin(2*PI * TONE_FREQUENCY * i / SAMPLE_RATE));
-    tone_buffer[i * 2] = sample; // Left channel
-    tone_buffer[i * 2 + 1] = sample; // Right channel
+    // same sample in both channels, so it works with any SD setting
+    tone_buffer[i * 2] = sample; 
+    tone_buffer[i * 2 + 1] = sample; 
   }
 }
 
@@ -108,7 +109,7 @@ void loop() {
     Serial.println("END");
   }
 
-  else if (command == 'b'){
+  else if (command == 'p'){
     size_t bytes_written = 0;
     i2s_write(I2S_NUM_1, tone_buffer, sizeof(tone_buffer), &bytes_written, portMAX_DELAY);
     Serial.println("PLAYING TONE");
