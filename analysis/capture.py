@@ -11,6 +11,7 @@ with serial.Serial(PORT, BAUD_RATE, timeout=5, exclusive=True) as ser:
     # wait for initialization and dispose of any old data in the buffer
     time.sleep(2) 
     ser.reset_input_buffer()
+    
     ser.write(b"r")
 
     #read garbage data until we get the start signal
