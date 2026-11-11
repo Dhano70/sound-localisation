@@ -45,6 +45,14 @@ void send_samples(size_t sample_count) {
   }
 }
 
+void clear_mic_buffer() {
+  int32_t discard[256];
+  size_t bytes_discarded = 0;
+  do {
+    i2s_read(I2S_NUM_0, discard, sizeof(discard), &bytes_discarded, 0);
+  } while (bytes_discarded > 0);
+}
+
 void setup() {
   Serial.begin(921600);
 
@@ -117,6 +125,7 @@ void loop() {
     }
 
     Serial.println("START");
+    clear_mic_buffer();
     size_t samples_read = record(0, SAMPLES_BEFORE_BEEP);
     play_tone();
     samples_read += record(SAMPLES_BEFORE_BEEP, NUM_SAMPLES - SAMPLES_BEFORE_BEEP);
