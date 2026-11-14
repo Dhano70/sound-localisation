@@ -18,14 +18,15 @@
 #define NUM_SAMPLES (SAMPLE_RATE * AUDIO_DURATION_MS / 1000)
 #define SAMPLES_BEFORE_BEEP (NUM_SAMPLES / 2)
 
-// Tone constants
-#define TONE_FREQUENCY 1000
-#define TONE_DURATION_MS 200
-#define TONE_AMPLITUDE 3000
-#define TONE_FRAMES (SAMPLE_RATE * TONE_DURATION_MS / 1000)
+// Chirp constants
+#define CHIRP_FREQUENCY_START 2000
+#define CHIRP_FREQUENCY_END 6000
+#define CHIRP_DURATION_MS 50
+#define CHIRP_AMPLITUDE 3000
+#define CHIRP_FRAMES (SAMPLE_RATE * CHIRP_DURATION_MS / 1000)
 
 int32_t *audio_buffer;
-int16_t tone_buffer[TONE_FRAMES * AMP_CHANNELS];
+int16_t tone_buffer[CHIRP_FRAMES * AMP_CHANNELS];
 
 /* Helper functions */
 void play_tone() {
@@ -106,12 +107,18 @@ void setup() {
     Serial.println("Failed to allocate audio buffer in PSRAM");
   }
 
-  // Generate a 1kHz tone for 200ms
-  for (size_t i = 0; i < TONE_FRAMES; i++) {
-    int16_t sample = (int16_t)(TONE_AMPLITUDE * sin(2*PI * TONE_FREQUENCY * i / SAMPLE_RATE));
+  // Generate the chirp
+  const float duration_s = CHIRP_DURATION_MS / 1000.0;
+  const float frequency_slope = (CHIRP_FREQUENCY_END - CHIRP_FREQUENCY_START) / duration_s;  // Hz per second
+
+  for (size_t i = 0; i < CHIRP_FRAMES; i++) {
+    float t = i / (float)SAMPLE_RATE;
+    float waves_passed = CHIRP_FREQUENCY_START * t + frequency_slope / 2 * t * t;
+    int16_t sample = (int16_t)(CHIRP_AMPLITUDE * sin(2 * PI * waves_passed));
+
     // same sample in both channels, so it works with any SD setting
-    tone_buffer[i * 2] = sample; 
-    tone_buffer[i * 2 + 1] = sample; 
+    tone_buffer[i * AMP_CHANNELS] = sample; 
+    tone_buffer[i * AMP_CHANNELS + 1] = sample; 
   }
 }
 
